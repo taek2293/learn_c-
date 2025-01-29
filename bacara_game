@@ -1,0 +1,135 @@
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+using namespace std;
+
+int calculateScore(int card1, int card2) {
+    return (card1 + card2) % 10;
+}
+
+int drawCard() {
+    return rand() % 9 + 1;
+}
+
+int main() {
+    srand(time(0));
+
+    double playerMoney = 1000.0;
+    char playAgain;
+
+    cout << "===== 바카라 게임 =====" << endl;
+    cout << "초기 자금: $" << playerMoney << endl;
+
+    do {
+        double betAmount, tieBetAmount = 0;
+        char betChoice, tieBetChoice;
+
+        while (true) {
+            cout << "\n베팅할 금액을 입력하세요 (현재 자금: $" << playerMoney << "): ";
+            cin >> betAmount;
+
+            if (cin.fail() || betAmount <= 0 || betAmount > playerMoney) {
+                cin.clear();
+                cin.ignore(1000, '\n');
+                cout << "잘못된 입력입니다. 올바른 금액을 입력하세요.\n";
+                continue;
+            }
+            break;
+        }
+
+        while (true) {
+            cout << "베팅할 대상을 선택하세요 (P: 플레이어, B: 딜러): ";
+            cin >> betChoice;
+
+            if (betChoice == 'P' || betChoice == 'p' || betChoice == 'B' || betChoice == 'b') {
+                break;
+            }
+            cout << "잘못된 선택입니다. 다시 입력하세요.\n";
+        }
+
+        while (true) {
+            cout << "타이(Tie) 베팅을 하시겠습니까? (y/n): ";
+            cin >> tieBetChoice;
+
+            if (tieBetChoice == 'y' || tieBetChoice == 'Y' || tieBetChoice == 'n' || tieBetChoice == 'N') {
+                break;
+            }
+            cout << "잘못된 선택입니다. 다시 입력하세요.\n";
+        }
+
+        if (tieBetChoice == 'y' || tieBetChoice == 'Y') {
+            while (true) {
+                cout << "타이 베팅 금액을 입력하세요 (현재 자금: $" << playerMoney - betAmount << "): ";
+                cin >> tieBetAmount;
+
+                if (cin.fail() || tieBetAmount < 0 || tieBetAmount > (playerMoney - betAmount)) {
+                    cin.clear();
+                    cin.ignore(1000, '\n');
+                    cout << "잘못된 입력입니다. 올바른 금액을 입력하세요.\n";
+                    continue;
+                }
+                break;
+            }
+        }
+
+        int playerCard1 = drawCard();
+        int playerCard2 = drawCard();
+        int playerScore = calculateScore(playerCard1, playerCard2);
+
+        int dealerCard1 = drawCard();
+        int dealerCard2 = drawCard();
+        int dealerScore = calculateScore(dealerCard1, dealerCard2);
+
+        cout << "\n플레이어 카드: " << playerCard1 << ", " << playerCard2 << " (점수: " << playerScore << ")" << endl;
+        cout << "딜러 카드: " << dealerCard1 << ", " << dealerCard2 << " (점수: " << dealerScore << ")" << endl;
+
+        bool playerWins = playerScore > dealerScore;
+        bool dealerWins = dealerScore > playerScore;
+        bool isTie = playerScore == dealerScore;
+
+        if (isTie) {
+            cout << "무승부(Tie)입니다!" << endl;
+            if (tieBetAmount > 0) {
+                cout << "타이 베팅에 성공하여 " << tieBetAmount * 8 << "을 획득했습니다!" << endl;
+                playerMoney += tieBetAmount * 8;
+            }
+        } else {
+            if (tieBetAmount > 0) {
+                cout << "타이 베팅에 실패했습니다. 타이 베팅 금액을 잃습니다." << endl;
+                playerMoney -= tieBetAmount;
+            }
+        }
+
+        if ((betChoice == 'P' || betChoice == 'p') && playerWins) {
+            cout << "플레이어가 승리했습니다! 베팅에 성공했습니다." << endl;
+            playerMoney += betAmount;
+        } else if ((betChoice == 'B' || betChoice == 'b') && dealerWins) {
+            cout << "딜러가 승리했습니다! 베팅에 성공했습니다." << endl;
+            playerMoney += betAmount;
+        } else if (!isTie) {
+            cout << "베팅에 실패했습니다. 베팅 금액을 잃습니다." << endl;
+            playerMoney -= betAmount;
+        }
+
+        cout << "현재 자금: $" << playerMoney << endl;
+
+        if (playerMoney <= 0) {
+            cout << "자금이 모두 소진되었습니다. 게임을 종료합니다." << endl;
+            break;
+        }
+
+        while (true) {
+            cout << "게임을 다시 하시겠습니까? (y/n): ";
+            cin >> playAgain;
+
+            if (playAgain == 'y' || playAgain == 'Y' || playAgain == 'n' || playAgain == 'N') {
+                break;
+            }
+            cout << "잘못된 입력입니다. 다시 입력하세요.\n";
+        }
+
+    } while (playAgain == 'y' || playAgain == 'Y');
+
+    cout << "게임이 종료되었습니다. 최종 자금: $" << playerMoney << endl;
+    return 0;
+}
